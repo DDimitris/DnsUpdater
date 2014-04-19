@@ -17,7 +17,7 @@ import java.util.Properties;
 
 public class DnsDaemon implements Daemon {
 
-    private final String fileName = "/etc/dnsUpdater/dns_server.config";
+    private final String configurationFile = "/etc/dnsUpdater/dns_server.config";
     private final String[] newIP = new String[3];
     private String server;
     private String key;
@@ -40,7 +40,7 @@ public class DnsDaemon implements Daemon {
         initTime = new Date();
         prop = new Properties();
         try {
-            InputStream is = new FileInputStream(fileName);
+            InputStream is = new FileInputStream(configurationFile);
             prop.load(is);
             if (prop.getProperty("server", null) == null) {
                 Logger.getLogger(DnsDaemon.class.getName()).log(Level.SEVERE, "Daemon could not start! You must specify the server to connect to!");
@@ -166,13 +166,6 @@ public class DnsDaemon implements Daemon {
         }
         return result;
     }
-
-//    private String printStackTraceToString(Exception e) {
-//        StringWriter sw = new StringWriter();
-//        PrintWriter ps = new PrintWriter(sw);
-//        e.printStackTrace(ps);
-//        return sw.toString();
-//    }
 
     @Override
     public void start() throws Exception {
