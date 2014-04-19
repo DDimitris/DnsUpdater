@@ -167,13 +167,6 @@ public class DnsDaemon implements Daemon {
         return result;
     }
 
-//    private String printStackTraceToString(Exception e) {
-//        StringWriter sw = new StringWriter();
-//        PrintWriter ps = new PrintWriter(sw);
-//        e.printStackTrace(ps);
-//        return sw.toString();
-//    }
-
     @Override
     public void start() throws Exception {
         myThread.start();
