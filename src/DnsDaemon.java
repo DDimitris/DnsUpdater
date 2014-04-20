@@ -1,5 +1,5 @@
-package daemon;
 
+package daemon;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.Date;
@@ -17,30 +17,47 @@ import java.util.Properties;
 
 public class DnsDaemon implements Daemon {
 
-    private final String configurationFile = "/etc/dnsUpdater/dns_server.config";
-    private final String[] newIP = new String[3];
+    private final String dnsConfigurationFile = "/etc/dnsUpdater/dns_server.config";
+    private final String commandCofigurationFile = "/etc/dnsUpdater/command.config";
+    private final String[] newIP;
+    private final Properties prop;
+    private InputStream is;
     private String server;
     private String key;
     private String zone;
     private String record;
     private String type;
     private String ttl;
-    private Properties prop;
     private Process commandOutput;
-    private String result = null;
+    private String result;
     private String myIp;
     private Thread myThread;
-    private boolean stopped = false;
+    private boolean stopped;
     private Date initTime;
+
+    {
+        prop = new Properties();
+        this.newIP = new String[3];
+        result = null;
+        stopped = false;
+    }
     private static final String[] WHOAMI = {"/bin/sh",
         "-c", "dig +short myip.opendns.com @resolver1.opendns.com"};
 
-    @Override
-    public void init(DaemonContext daemonContext) throws DaemonInitException, Exception {
-        initTime = new Date();
-        prop = new Properties();
+    private void readCommandConfigFile() {
+        prop.clear();
         try {
-            InputStream is = new FileInputStream(configurationFile);
+            is = new FileInputStream(commandCofigurationFile);
+            prop.load(is);
+        } catch (IOException ex) {
+            Logger.getLogger(DnsDaemon.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void readDnsConfigFile() {
+
+        try {
+            is = new FileInputStream(dnsConfigurationFile);
             prop.load(is);
             if (prop.getProperty("server", null) == null) {
                 Logger.getLogger(DnsDaemon.class.getName()).log(Level.SEVERE, "Daemon could not start! You must specify the server to connect to!");
@@ -73,11 +90,19 @@ public class DnsDaemon implements Daemon {
             } else {
                 ttl = prop.getProperty("ttl_of_record");
             }
+            is.close();
         } catch (FileNotFoundException ex) {
             Logger.getLogger(DnsDaemon.class.getName()).log(Level.SEVERE, "An error occurred!", ex);
         } catch (IOException ex) {
             Logger.getLogger(DnsDaemon.class.getName()).log(Level.SEVERE, "An error occurred!", ex);
         }
+    }
+
+    @Override
+    public void init(DaemonContext daemonContext) throws DaemonInitException, Exception {
+        initTime = new Date();
+        readDnsConfigFile();
+        readCommandConfigFile();
         myThread = new Thread() {
             @Override
             public synchronized void start() {
