@@ -24,7 +24,7 @@ JAVA_HOME="/usr/lib/jvm/jdk-7-oracle-armhf"
 # Our classpath including our jar file and the Apache Commons Daemon library
 CLASS_PATH="$FILE_PATH/dnsDaemon.jar:$FILE_PATH/lib/commons-daemon-1.0.15.jar"
 # The fully qualified name of the class to execute
-CLASS="src.DnsDaemon"
+CLASS="daemon.DnsDaemon"
 
 #The user to run the daemon as
 USER="root"
