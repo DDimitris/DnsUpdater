@@ -18,7 +18,7 @@ DESC="DnsDaemon service"
 # The path to Jsvc
 EXEC="/usr/bin/jsvc"
 # The path to the folder containing dnsdaemon.jar
-FILE_PATH="/home/dimitris/dnsUpdate/dnsdaemon"
+FILE_PATH=""
 # The path to the folder containing the java runtime
 JAVA_HOME="/usr/lib/jvm/jdk-7-oracle-armhf"
 # Our classpath including our jar file and the Apache Commons Daemon library

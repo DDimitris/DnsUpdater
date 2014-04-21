@@ -9,25 +9,15 @@ import org.apache.commons.daemon.Daemon;
 import org.apache.commons.daemon.DaemonContext;
 import org.apache.commons.daemon.DaemonInitException;
 import java.text.SimpleDateFormat;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.IOException;
-import java.util.Properties;
 
 public class DnsDaemon implements Daemon {
 
-    private final String dnsConfigurationFile = "/etc/dnsUpdater/dns_server.config";
+    
     private final String commandCofigurationFile = "/etc/dnsUpdater/command.config";
     private final String[] newIP;
-    private final Properties prop;
-    private InputStream is;
-    private String server;
-    private String key;
-    private String zone;
-    private String record;
-    private String type;
-    private String ttl;
+    private ReadDnsConfigFile dnsFile; 
     private Process commandOutput;
     private String result;
     private String myIp;
@@ -36,7 +26,7 @@ public class DnsDaemon implements Daemon {
     private Date initTime;
 
     {
-        prop = new Properties();
+        
         this.newIP = new String[3];
         result = null;
         stopped = false;
@@ -44,65 +34,11 @@ public class DnsDaemon implements Daemon {
     private static final String[] WHOAMI = {"/bin/sh",
         "-c", "dig +short myip.opendns.com @resolver1.opendns.com"};
 
-    private void readCommandConfigFile() {
-        prop.clear();
-        try {
-            is = new FileInputStream(commandCofigurationFile);
-            prop.load(is);
-        } catch (IOException ex) {
-            Logger.getLogger(DnsDaemon.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
 
-    private void readDnsConfigFile() {
-
-        try {
-            is = new FileInputStream(dnsConfigurationFile);
-            prop.load(is);
-            if (prop.getProperty("server", null) == null) {
-                Logger.getLogger(DnsDaemon.class.getName()).log(Level.SEVERE, "Daemon could not start! You must specify the server to connect to!");
-                System.exit(1);
-            } else {
-                server = prop.getProperty("server");
-            }
-            key = prop.getProperty("key_path", null);
-            if (prop.getProperty("zone", null) == null) {
-                Logger.getLogger(DnsDaemon.class.getName()).log(Level.SEVERE, "Daemon could not start! You must specify the zone!");
-                System.exit(1);
-            } else {
-                zone = prop.getProperty("zone");
-            }
-            if (prop.getProperty("record", null) == null) {
-                Logger.getLogger(DnsDaemon.class.getName()).log(Level.SEVERE, "Daemon could not start! You must specify the record!");
-                System.exit(1);
-            } else {
-                record = prop.getProperty("record");
-            }
-            if (prop.getProperty("type_of_record", null) == null) {
-                Logger.getLogger(DnsDaemon.class.getName()).log(Level.SEVERE, "Daemon could not start! You must specify the type of the record!");
-                System.exit(1);
-            } else {
-                type = prop.getProperty("type_of_record");
-            }
-            if (prop.getProperty("ttl_of_record", null) == null) {
-                Logger.getLogger(DnsDaemon.class.getName()).log(Level.SEVERE, "Daemon could not start! You must specify the time to live (TTL)!");
-                System.exit(1);
-            } else {
-                ttl = prop.getProperty("ttl_of_record");
-            }
-            is.close();
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(DnsDaemon.class.getName()).log(Level.SEVERE, "An error occurred!", ex);
-        } catch (IOException ex) {
-            Logger.getLogger(DnsDaemon.class.getName()).log(Level.SEVERE, "An error occurred!", ex);
-        }
-    }
 
     @Override
     public void init(DaemonContext daemonContext) throws DaemonInitException, Exception {
         initTime = new Date();
-        readDnsConfigFile();
-        readCommandConfigFile();
         myThread = new Thread() {
             @Override
             public synchronized void start() {
@@ -112,6 +48,7 @@ public class DnsDaemon implements Daemon {
 
             @Override
             public void run() {
+                dnsFile = new ReadDnsConfigFile();
                 myIp = checkIdentity();
                 if (myIp != null) {
                     sendUpdate(myIp);
@@ -149,24 +86,28 @@ public class DnsDaemon implements Daemon {
     private void sendUpdate(String ip) {
         newIP[0] = "/bin/sh";
         newIP[1] = "-c";
-        if (key != null) {
-            newIP[2] = "cat << EOF | nsupdate -k " + key + "\n\r"
-                    + "server " + server + "\n\r"
-                    + "zone " + zone + "\n\r"
-                    + "update delete " + record + " " + type + "\n\r"
-                    + "update add " + record + " " + ttl + " " + type + " " + ip + "\n\r"
+        if (dnsFile.getKey() != null) {
+            if(!dnsFile.getHasReverse().equals("YES")){
+            newIP[2] = "cat << EOF | nsupdate -k " + dnsFile.getKey() + "\n\r"
+                    + "server " + dnsFile.getServer() + "\n\r"
+                    + "zone " + dnsFile.getZone() + "\n\r"
+                    + "update delete " + dnsFile.getRecord() + " " + dnsFile.getType() + "\n\r"
+                    + "update add " + dnsFile.getRecord() + " " + dnsFile.getTTL() + " " + dnsFile.getType() + " " + ip + "\n\r"
                     + "send\n\r"
                     + "quit\n\r"
                     + "EOF\n\r";
+        }
         } else {
+            if(!dnsFile.getHasReverse().equals("YES")){
             newIP[2] = "cat << EOF | nsupdate\n\r"
-                    + "server " + server + "\n\r"
-                    + "zone " + zone + "\n\r"
-                    + "update delete " + record + " " + type + "\n\r"
-                    + "update add " + record + " " + ttl + " " + type + " " + ip + "\n\r"
+                    + "server " + dnsFile.getServer() + "\n\r"
+                    + "zone " + dnsFile.getZone() + "\n\r"
+                    + "update delete " + dnsFile.getRecord() + " " + dnsFile.getType() + "\n\r"
+                    + "update add " + dnsFile.getRecord() + " " + dnsFile.getTTL() + " " + dnsFile.getType() + " " + ip + "\n\r"
                     + "send\n\r"
                     + "quit\n\r"
                     + "EOF\n\r";
+            }
         }
         try {
             Date currentTime = new Date();
