@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package daemon;
+package gr.aueb.daemon;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -14,7 +14,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author dimitris
  */
 public class ReadDnsConfigFile {
@@ -38,7 +37,7 @@ public class ReadDnsConfigFile {
     }
 
     public ReadDnsConfigFile() {
-     readDnsConfigFile();
+        readDnsConfigFile();
     }
 
     private void readDnsConfigFile() {
@@ -97,7 +96,7 @@ public class ReadDnsConfigFile {
                 } else {
                     reverseTTL = prop.getProperty("reverse_ttl");
                 }
-            }else{
+            } else {
                 hasReverse = "NO";
             }
             is.close();
@@ -146,5 +145,5 @@ public class ReadDnsConfigFile {
 
     public String getReverseTTL() {
         return reverseTTL;
-    } 
+    }
 }

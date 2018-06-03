@@ -18,13 +18,11 @@ DESC="DnsDaemon service"
 # The path to Jsvc
 EXEC="/usr/bin/jsvc"
 # The path to the folder containing dnsdaemon.jar
-FILE_PATH=""
-# The path to the folder containing the java runtime
-JAVA_HOME="/usr/lib/jvm/jdk-7-oracle-armhf"
+FILE_PATH="/etc/dnsUpdater"
 # Our classpath including our jar file and the Apache Commons Daemon library
-CLASS_PATH="$FILE_PATH/dnsDaemon.jar:$FILE_PATH/lib/commons-daemon-1.0.15.jar"
+CLASS_PATH="$FILE_PATH/dnsUpdater-1.0-SNAPSHOT-jar-with-dependencies.jar"
 # The fully qualified name of the class to execute
-CLASS="daemon.DnsDaemon"
+CLASS="gr.aueb.daemon.DnsDaemon"
 
 #The user to run the daemon as
 USER="root"
@@ -36,7 +34,7 @@ PID="/var/run/$NAME.pid"
 LOG_OUT="$FILE_PATH/log/$NAME.out"
 
 # System.err writes to this file...
-LOG_ERR="$FILE_PATH/err/$NAME.err"
+LOG_ERR="$FILE_PATH/log/$NAME.err"
 
 
 jsvc_exec()

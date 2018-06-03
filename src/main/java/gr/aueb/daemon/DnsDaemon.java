@@ -1,23 +1,25 @@
 
-package daemon;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+package gr.aueb.daemon;
+
 import org.apache.commons.daemon.Daemon;
 import org.apache.commons.daemon.DaemonContext;
 import org.apache.commons.daemon.DaemonInitException;
-import java.text.SimpleDateFormat;
-import java.io.InputStream;
+
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DnsDaemon implements Daemon {
 
-    
+
     private final String commandCofigurationFile = "/etc/dnsUpdater/command.config";
     private final String[] newIP;
-    private ReadDnsConfigFile dnsFile; 
+    private ReadDnsConfigFile dnsFile;
     private Process commandOutput;
     private String result;
     private String myIp;
@@ -26,17 +28,16 @@ public class DnsDaemon implements Daemon {
     private Date initTime;
 
     {
-        
+
         this.newIP = new String[3];
         result = null;
         stopped = false;
     }
+
     private static final String[] WHOAMI = {"/bin/sh",
-        "-c", "dig +short myip.opendns.com @resolver1.opendns.com"};
+            "-c", "dig +short myip.opendns.com @resolver1.opendns.com"};
 
 
-
-    @Override
     public void init(DaemonContext daemonContext) throws DaemonInitException, Exception {
         initTime = new Date();
         myThread = new Thread() {
@@ -78,35 +79,37 @@ public class DnsDaemon implements Daemon {
                     }
                 }
             }
+
+            ;
+        }
+
         ;
     }
 
-    ;
-}
     private void sendUpdate(String ip) {
         newIP[0] = "/bin/sh";
         newIP[1] = "-c";
         if (dnsFile.getKey() != null) {
-            if(!dnsFile.getHasReverse().equals("YES")){
-            newIP[2] = "cat << EOF | nsupdate -k " + dnsFile.getKey() + "\n\r"
-                    + "server " + dnsFile.getServer() + "\n\r"
-                    + "zone " + dnsFile.getZone() + "\n\r"
-                    + "update delete " + dnsFile.getRecord() + " " + dnsFile.getType() + "\n\r"
-                    + "update add " + dnsFile.getRecord() + " " + dnsFile.getTTL() + " " + dnsFile.getType() + " " + ip + "\n\r"
-                    + "send\n\r"
-                    + "quit\n\r"
-                    + "EOF\n\r";
-        }
+            if (!dnsFile.getHasReverse().equals("YES")) {
+                newIP[2] = "cat << EOF | nsupdate -k " + dnsFile.getKey() + "\n\r"
+                        + "server " + dnsFile.getServer() + "\n\r"
+                        + "zone " + dnsFile.getZone() + "\n\r"
+                        + "update delete " + dnsFile.getRecord() + " " + dnsFile.getType() + "\n\r"
+                        + "update add " + dnsFile.getRecord() + " " + dnsFile.getTTL() + " " + dnsFile.getType() + " " + ip + "\n\r"
+                        + "send\n\r"
+                        + "quit\n\r"
+                        + "EOF\n\r";
+            }
         } else {
-            if(!dnsFile.getHasReverse().equals("YES")){
-            newIP[2] = "cat << EOF | nsupdate\n\r"
-                    + "server " + dnsFile.getServer() + "\n\r"
-                    + "zone " + dnsFile.getZone() + "\n\r"
-                    + "update delete " + dnsFile.getRecord() + " " + dnsFile.getType() + "\n\r"
-                    + "update add " + dnsFile.getRecord() + " " + dnsFile.getTTL() + " " + dnsFile.getType() + " " + ip + "\n\r"
-                    + "send\n\r"
-                    + "quit\n\r"
-                    + "EOF\n\r";
+            if (!dnsFile.getHasReverse().equals("YES")) {
+                newIP[2] = "cat << EOF | nsupdate\n\r"
+                        + "server " + dnsFile.getServer() + "\n\r"
+                        + "zone " + dnsFile.getZone() + "\n\r"
+                        + "update delete " + dnsFile.getRecord() + " " + dnsFile.getType() + "\n\r"
+                        + "update add " + dnsFile.getRecord() + " " + dnsFile.getTTL() + " " + dnsFile.getType() + " " + ip + "\n\r"
+                        + "send\n\r"
+                        + "quit\n\r"
+                        + "EOF\n\r";
             }
         }
         try {
@@ -133,12 +136,10 @@ public class DnsDaemon implements Daemon {
         return result;
     }
 
-    @Override
     public void start() throws Exception {
         myThread.start();
     }
 
-    @Override
     public void stop() throws Exception {
         stopped = true;
         try {
@@ -156,7 +157,6 @@ public class DnsDaemon implements Daemon {
         }
     }
 
-    @Override
     public void destroy() {
         myThread = null;
     }

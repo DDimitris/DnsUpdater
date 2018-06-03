@@ -2,3 +2,7 @@ lib/*
 dnsdaemon/*
 bin/*
 keys/*
+
+.idea/
+DnsUpdater.iml
+target/
