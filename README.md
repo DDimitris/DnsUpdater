@@ -17,3 +17,11 @@ sudo apt-get install jsvc
 ```
 
 Jsvc is a library from Apache that is used in order to run Java deamonized applications.
+
+### Important:
+
+Before running this application you must add your dns credentials into the file located at:
+
+```
+/etc/dnsUpdater/dns_server.config
+```
