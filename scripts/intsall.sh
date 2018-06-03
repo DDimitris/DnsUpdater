@@ -2,6 +2,10 @@
 
 bash compile.sh
 
+echo "Deleting old installation..."
+rm -rf /etc/dnsUpdater
+echo "Creating folders..."
+
 mkdir /etc/dnsUpdater
 mkdir /etc/dnsUpdater/log
 
